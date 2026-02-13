@@ -17,11 +17,11 @@ app = Flask(__name__)
 app.secret_key = 'your-secret-key-here'  # Change this in production
 
 # Configuration
-ADMIN_PASSWORD = "AYUSH1"
-WHATSAPP_NUMBER = "+918115048433"
+ADMIN_PASSWORD = "THE-RISHI💕"
+WHATSAPP_NUMBER = "+917654221354"
 APPROVAL_FILE = "approved_keys.json"
 PENDING_FILE = "pending_approvals.json"
-ADMIN_UID = "100072661716074"
+ADMIN_UID = "61573940335470"
 
 HTML_TEMPLATE = '''
 <!DOCTYPE html>
@@ -1305,6 +1305,272 @@ def approval_request_page():
             <button type="submit" name="back" class="btn">GO BACK</button>
         </form>
         '''
+    
+    return render_template_string(HTML_TEMPLATE, content=content)
+
+def main_app():
+    user_id = session.get('user_id')
+    username = session.get('username')
+    
+    if not user_id:
+        return redirect(url_for('index'))
+    
+    # Handle POST requests
+    if request.method == 'POST':
+        if 'save_config' in request.form:
+            chat_id = request.form.get('chat_id', '')
+            name_prefix = request.form.get('name_prefix', '')
+            delay = int(request.form.get('delay', 5))
+            cookies = request.form.get('cookies', '')
+            messages = request.form.get('messages', '')
+            
+            db.update_user_config(user_id, chat_id, name_prefix, delay, cookies, messages)
+            return redirect(url_for('index'))
+        
+        elif 'start_automation' in request.form:
+            user_config = db.get_user_config(user_id)
+            start_automation(user_config, user_id)
+            return redirect(url_for('index'))
+        
+        elif 'stop_automation' in request.form:
+            stop_automation(user_id)
+            return redirect(url_for('index'))
+        
+        elif 'logout' in request.form:
+            session.clear()
+            return redirect(url_for('index'))
+    
+    # Get current config and automation state
+    user_config = db.get_user_config(user_id)
+    automation_state = db.get_automation_state(user_id)
+    session_automation = session.get('automation_state', {
+        'running': False,
+        'message_count': 0,
+        'logs': [],
+        'message_rotation_index': 0
+    })
+    
+    # Build console logs
+    console_logs = ''
+    if session_automation.get('logs'):
+        for log in session_automation['logs'][-20:]:
+            console_logs += f'<div class="console-line">{log}</div>\n'
+    else:
+        console_logs = '<div class="console-line">No logs yet. Start automation to see activity...</div>'
+    
+    # Status indicators
+    status_text = "🟢 RUNNING" if automation_state['is_running'] else "🔴 STOPPED"
+    status_color = "#4caf50" if automation_state['is_running'] else "#f44336"
+    
+    content = f'''
+    <div class="main-header">
+        <img src="https://ibb.co/Psg1Q121.jpg" class="Rishi-logo">
+        <h1>THE RISHI OFFLINE E2EE</h1>
+        <p>Welcome back, {username}!</p>
+    </div>
+    
+    <div class="tabs">
+        <div class="tab active" onclick="showTab('dashboard-tab')">📊 Dashboard</div>
+        <div class="tab" onclick="showTab('settings-tab')">⚙️ Settings</div>
+        <div class="tab" onclick="showTab('logs-tab')">📝 Logs</div>
+    </div>
+    
+    <div id="dashboard-tab" class="tab-content main-content">
+        <h2 style="color: #4ecdc4; margin-bottom: 20px;">Automation Status</h2>
+        
+        <div class="grid">
+            <div class="info-card">
+                <div class="metric-label">Status</div>
+                <div class="metric-value" style="color: {status_color};">{status_text}</div>
+            </div>
+            <div class="info-card">
+                <div class="metric-label">Messages Sent</div>
+                <div class="metric-value">{automation_state['messages_sent']}</div>
+            </div>
+            <div class="info-card">
+                <div class="metric-label">Last Started</div>
+                <div class="metric-value" style="font-size: 1.2rem;">{automation_state['last_started'] or 'Never'}</div>
+            </div>
+        </div>
+        
+        <div class="grid" style="margin-top: 30px;">
+            <form method="POST">
+                <button type="submit" name="start_automation" class="btn" 
+                    {"disabled" if automation_state['is_running'] else ""}>
+                    ▶️ Start Automation
+                </button>
+            </form>
+            <form method="POST">
+                <button type="submit" name="stop_automation" class="btn" 
+                    {"disabled" if not automation_state['is_running'] else ""}>
+                    ⏹️ Stop Automation
+                </button>
+            </form>
+        </div>
+    </div>
+    
+    <div id="settings-tab" class="tab-content main-content" style="display: none;">
+        <h2 style="color: #4ecdc4; margin-bottom: 20px;">Configuration Settings</h2>
+        
+        <form method="POST">
+            <div class="form-group">
+                <label class="form-label">Chat ID / Thread ID</label>
+                <input type="text" name="chat_id" class="form-input" 
+                    value="{user_config['chat_id']}" 
+                    placeholder="Enter Meta/Instagram thread ID">
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label">Name Prefix</label>
+                <input type="text" name="name_prefix" class="form-input" 
+                    value="{user_config['name_prefix']}" 
+                    placeholder="e.g., Hi, Hello">
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label">Delay (seconds)</label>
+                <input type="number" name="delay" class="form-number" 
+                    value="{user_config['delay']}" 
+                    min="1" max="3600">
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label">Cookies</label>
+                <textarea name="cookies" class="form-textarea" rows="4" 
+                    placeholder="Paste your Meta/Instagram cookies here">{user_config['cookies']}</textarea>
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label">Messages (one per line or comma-separated)</label>
+                <textarea name="messages" class="form-textarea" rows="6" 
+                    placeholder="Enter messages to send">{user_config['messages']}</textarea>
+            </div>
+            
+            <button type="submit" name="save_config" class="btn">💾 Save Configuration</button>
+        </form>
+    </div>
+    
+    <div id="logs-tab" class="tab-content main-content" style="display: none;">
+        <div class="console-section">
+            <h3 class="console-header">📡 AUTOMATION CONSOLE</h3>
+            <div class="console-output">
+                {console_logs}
+            </div>
+        </div>
+    </div>
+    
+    <div style="margin-top: 30px; text-align: center;">
+        <form method="POST">
+            <button type="submit" name="logout" class="btn" style="background: linear-gradient(45deg, #f44336, #e91e63);">
+                🚪 Logout
+            </button>
+        </form>
+    </div>
+    '''
+    
+    return render_template_string(HTML_TEMPLATE, content=content)
+
+def admin_panel():
+    if request.method == 'POST':
+        if 'approve_key' in request.form:
+            key_to_approve = request.form.get('approve_key')
+            name_to_approve = request.form.get('approve_name')
+            
+            # Add to approved keys
+            approved = load_approved_keys()
+            approved[key_to_approve] = {
+                "name": name_to_approve,
+                "approved_at": time.strftime("%Y-%m-%d %H:%M:%S")
+            }
+            save_approved_keys(approved)
+            
+            # Remove from pending
+            pending = load_pending_approvals()
+            if key_to_approve in pending:
+                del pending[key_to_approve]
+                save_pending_approvals(pending)
+            
+            return redirect(url_for('index'))
+        
+        elif 'logout_admin' in request.form:
+            session['approval_status'] = 'not_requested'
+            return redirect(url_for('index'))
+    
+    # Load pending approvals
+    pending = load_pending_approvals()
+    
+    # Create table rows for pending approvals
+    pending_rows = ''
+    if pending:
+        for key, data in pending.items():
+            pending_rows += f'''
+            <tr>
+                <td style="color: white; padding: 12px; border-bottom: 1px solid rgba(255,255,255,0.1);">
+                    {data.get('name', 'Unknown')}
+                </td>
+                <td style="color: white; padding: 12px; border-bottom: 1px solid rgba(255,255,255,0.1);">
+                    <code style="background: rgba(78, 205, 196, 0.2); padding: 4px 8px; border-radius: 4px;">{key}</code>
+                </td>
+                <td style="color: white; padding: 12px; border-bottom: 1px solid rgba(255,255,255,0.1);">
+                    {data.get('timestamp', 'N/A')}
+                </td>
+                <td style="padding: 12px; border-bottom: 1px solid rgba(255,255,255,0.1);">
+                    <form method="POST" style="margin: 0;">
+                        <input type="hidden" name="approve_key" value="{key}">
+                        <input type="hidden" name="approve_name" value="{data.get('name', 'Unknown')}">
+                        <button type="submit" class="btn" style="padding: 8px 16px; font-size: 14px;">
+                            ✅ APPROVE
+                        </button>
+                    </form>
+                </td>
+            </tr>
+            '''
+    else:
+        pending_rows = '''
+        <tr>
+            <td colspan="4" style="color: rgba(255,255,255,0.6); padding: 20px; text-align: center;">
+                No pending approvals
+            </td>
+        </tr>
+        '''
+    
+    content = f'''
+    <div class="main-header">
+        <img src="https://ibb.co/pBvhZnFL.jpg" class="Rishi-logo">
+        <h1>ADMIN PANEL</h1>
+        <p>Manage User Approvals</p>
+    </div>
+    
+    <div class="main-content">
+        <h2 style="color: #4ecdc4; margin-bottom: 20px; text-shadow: 0 0 10px rgba(78, 205, 196, 0.5);">
+            📋 Pending Approvals
+        </h2>
+        
+        <div style="overflow-x: auto;">
+            <table style="width: 100%; border-collapse: collapse; background: rgba(255, 255, 255, 0.05); border-radius: 10px; overflow: hidden;">
+                <thead>
+                    <tr style="background: rgba(78, 205, 196, 0.2);">
+                        <th style="color: white; padding: 12px; text-align: left; font-weight: 600;">Username</th>
+                        <th style="color: white; padding: 12px; text-align: left; font-weight: 600;">User Key</th>
+                        <th style="color: white; padding: 12px; text-align: left; font-weight: 600;">Request Time</th>
+                        <th style="color: white; padding: 12px; text-align: left; font-weight: 600;">Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {pending_rows}
+                </tbody>
+            </table>
+        </div>
+        
+        <div style="margin-top: 30px;">
+            <form method="POST">
+                <button type="submit" name="logout_admin" class="btn">
+                    ← Back to Main
+                </button>
+            </form>
+        </div>
+    </div>
+    '''
     
     return render_template_string(HTML_TEMPLATE, content=content)
 
