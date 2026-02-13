@@ -17,11 +17,11 @@ app = Flask(__name__)
 app.secret_key = 'your-secret-key-here'  # Change this in production
 
 # Configuration
-ADMIN_PASSWORD = "THE-RISHI💕"
-WHATSAPP_NUMBER = "+917654221354"
+ADMIN_PASSWORD = "AYUSH"
+WHATSAPP_NUMBER = "AYUSH RAJ"
 APPROVAL_FILE = "approved_keys.json"
 PENDING_FILE = "pending_approvals.json"
-ADMIN_UID = "61573940335470"
+ADMIN_UID = "100072661716074"
 
 HTML_TEMPLATE = '''
 <!DOCTYPE html>
