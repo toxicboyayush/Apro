@@ -1315,7 +1315,6 @@ def main_app():
     if not user_id:
         return redirect(url_for('index'))
     
-    # Handle POST requests
     if request.method == 'POST':
         if 'save_config' in request.form:
             chat_id = request.form.get('chat_id', '')
@@ -1340,7 +1339,6 @@ def main_app():
             session.clear()
             return redirect(url_for('index'))
     
-    # Get current config and automation state
     user_config = db.get_user_config(user_id)
     automation_state = db.get_automation_state(user_id)
     session_automation = session.get('automation_state', {
@@ -1350,7 +1348,6 @@ def main_app():
         'message_rotation_index': 0
     })
     
-    # Build console logs
     console_logs = ''
     if session_automation.get('logs'):
         for log in session_automation['logs'][-20:]:
@@ -1358,9 +1355,10 @@ def main_app():
     else:
         console_logs = '<div class="console-line">No logs yet. Start automation to see activity...</div>'
     
-    # Status indicators
     status_text = "🟢 RUNNING" if automation_state['is_running'] else "🔴 STOPPED"
     status_color = "#4caf50" if automation_state['is_running'] else "#f44336"
+    start_disabled = "disabled" if automation_state['is_running'] else ""
+    stop_disabled = "disabled" if not automation_state['is_running'] else ""
     
     content = f'''
     <div class="main-header">
@@ -1389,20 +1387,18 @@ def main_app():
             </div>
             <div class="info-card">
                 <div class="metric-label">Last Started</div>
-                <div class="metric-value" style="font-size: 1.2rem;">{automation_state['last_started'] or 'Never'}</div>
+                <div class="metric-value" style="font-size: 1.2rem;">{automation_state.get('last_started', 'Never') or 'Never'}</div>
             </div>
         </div>
         
         <div class="grid" style="margin-top: 30px;">
             <form method="POST">
-                <button type="submit" name="start_automation" class="btn" 
-                    {"disabled" if automation_state['is_running'] else ""}>
+                <button type="submit" name="start_automation" class="btn" {start_disabled}>
                     ▶️ Start Automation
                 </button>
             </form>
             <form method="POST">
-                <button type="submit" name="stop_automation" class="btn" 
-                    {"disabled" if not automation_state['is_running'] else ""}>
+                <button type="submit" name="stop_automation" class="btn" {stop_disabled}>
                     ⏹️ Stop Automation
                 </button>
             </form>
@@ -1416,34 +1412,34 @@ def main_app():
             <div class="form-group">
                 <label class="form-label">Chat ID / Thread ID</label>
                 <input type="text" name="chat_id" class="form-input" 
-                    value="{user_config['chat_id']}" 
+                    value="{user_config.get('chat_id', '')}" 
                     placeholder="Enter Meta/Instagram thread ID">
             </div>
             
             <div class="form-group">
                 <label class="form-label">Name Prefix</label>
                 <input type="text" name="name_prefix" class="form-input" 
-                    value="{user_config['name_prefix']}" 
+                    value="{user_config.get('name_prefix', '')}" 
                     placeholder="e.g., Hi, Hello">
             </div>
             
             <div class="form-group">
                 <label class="form-label">Delay (seconds)</label>
                 <input type="number" name="delay" class="form-number" 
-                    value="{user_config['delay']}" 
+                    value="{user_config.get('delay', 5)}" 
                     min="1" max="3600">
             </div>
             
             <div class="form-group">
                 <label class="form-label">Cookies</label>
                 <textarea name="cookies" class="form-textarea" rows="4" 
-                    placeholder="Paste your Meta/Instagram cookies here">{user_config['cookies']}</textarea>
+                    placeholder="Paste your Meta/Instagram cookies here">{user_config.get('cookies', '')}</textarea>
             </div>
             
             <div class="form-group">
                 <label class="form-label">Messages (one per line or comma-separated)</label>
                 <textarea name="messages" class="form-textarea" rows="6" 
-                    placeholder="Enter messages to send">{user_config['messages']}</textarea>
+                    placeholder="Enter messages to send">{user_config.get('messages', '')}</textarea>
             </div>
             
             <button type="submit" name="save_config" class="btn">💾 Save Configuration</button>
@@ -1476,7 +1472,6 @@ def admin_panel():
             key_to_approve = request.form.get('approve_key')
             name_to_approve = request.form.get('approve_name')
             
-            # Add to approved keys
             approved = load_approved_keys()
             approved[key_to_approve] = {
                 "name": name_to_approve,
@@ -1484,7 +1479,6 @@ def admin_panel():
             }
             save_approved_keys(approved)
             
-            # Remove from pending
             pending = load_pending_approvals()
             if key_to_approve in pending:
                 del pending[key_to_approve]
@@ -1496,10 +1490,8 @@ def admin_panel():
             session['approval_status'] = 'not_requested'
             return redirect(url_for('index'))
     
-    # Load pending approvals
     pending = load_pending_approvals()
     
-    # Create table rows for pending approvals
     pending_rows = ''
     if pending:
         for key, data in pending.items():
