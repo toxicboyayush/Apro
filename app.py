@@ -102,6 +102,15 @@ HTML_TEMPLATE = '''
             font-weight: 500;
         }
         
+        .Rishi-logo {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            margin-bottom: 15px;
+            border: 3px solid #667eea;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.5);
+        }
+        
         .btn {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
@@ -137,9 +146,9 @@ HTML_TEMPLATE = '''
         }
         
         .form-label {
-            color: #ffffff;
-            font-weight: 700;
-            font-size: 13px;
+            color: #ffffff !important;
+            font-weight: 700 !important;
+            font-size: 13px !important;
             display: block;
             margin-bottom: 8px;
             text-transform: uppercase;
@@ -258,6 +267,7 @@ HTML_TEMPLATE = '''
             border-left: 3px solid rgba(0, 255, 136, 0.4);
             position: relative;
             border-radius: 4px;
+            word-wrap: break-word;
         }
         
         .console-line::before {
@@ -268,6 +278,26 @@ HTML_TEMPLATE = '''
             color: #00ff88;
         }
         
+        .success-box {
+            background: linear-gradient(135deg, #84fab0 0%, #8fd3f4 100%);
+            padding: 1rem;
+            border-radius: 10px;
+            color: white;
+            text-align: center;
+            margin: 1rem 0;
+            font-weight: 600;
+        }
+        
+        .error-box {
+            background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
+            padding: 1rem;
+            border-radius: 10px;
+            color: white;
+            text-align: center;
+            margin: 1rem 0;
+            font-weight: 600;
+        }
+        
         .info-card {
             background: rgba(255, 255, 255, 0.05);
             backdrop-filter: blur(10px);
@@ -275,6 +305,36 @@ HTML_TEMPLATE = '''
             border-radius: 15px;
             margin: 15px 0;
             border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .footer {
+            text-align: center;
+            padding: 2rem;
+            color: rgba(255, 255, 255, 0.7);
+            font-weight: 600;
+            margin-top: 3rem;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
+            border-top: 1px solid rgba(255, 255, 255, 0.15);
+        }
+        
+        .whatsapp-btn {
+            background: linear-gradient(45deg, #25D366, #128C7E);
+            color: white;
+            padding: 15px 30px;
+            border-radius: 12px;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 18px;
+            display: inline-block;
+            margin: 20px 0;
+            box-shadow: 0 4px 15px rgba(37, 211, 102, 0.4);
+            transition: all 0.3s ease;
+        }
+        
+        .whatsapp-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(37, 211, 102, 0.6);
         }
         
         .grid {
@@ -296,6 +356,24 @@ HTML_TEMPLATE = '''
             background: rgba(76, 175, 80, 0.2);
             border: 1px solid rgba(76, 175, 80, 0.5);
             color: #4caf50;
+        }
+        
+        .alert-error {
+            background: rgba(244, 67, 54, 0.2);
+            border: 1px solid rgba(244, 67, 54, 0.5);
+            color: #f44336;
+        }
+        
+        .alert-warning {
+            background: rgba(255, 152, 0, 0.2);
+            border: 1px solid rgba(255, 152, 0, 0.5);
+            color: #ff9800;
+        }
+        
+        .alert-info {
+            background: rgba(33, 150, 243, 0.2);
+            border: 1px solid rgba(33, 150, 243, 0.5);
+            color: #2196f3;
         }
         
         h2, h3 {
