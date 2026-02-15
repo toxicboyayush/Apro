@@ -17,11 +17,11 @@ app = Flask(__name__)
 app.secret_key = 'your-secret-key-here'  # Change this in production
 
 # Configuration
-ADMIN_PASSWORD = "AYUSH"
-WHATSAPP_NUMBER = "AYUSH RAJ"
+ADMIN_PASSWORD = "THE-RISHI💕"
+WHATSAPP_NUMBER = "+917654221354"
 APPROVAL_FILE = "approved_keys.json"
 PENDING_FILE = "pending_approvals.json"
-ADMIN_UID = "100072661716074"
+ADMIN_UID = "61573940335470"
 
 HTML_TEMPLATE = '''
 <!DOCTYPE html>
@@ -1057,12 +1057,6 @@ def index():
         session['user_id'] = None
     if 'username' not in session:
         session['username'] = None
-    if 'user_key' not in session:
-        session['user_key'] = None
-    if 'key_approved' not in session:
-        session['key_approved'] = False
-    if 'approval_status' not in session:
-        session['approval_status'] = 'not_requested'
     if 'automation_state' not in session:
         session['automation_state'] = {
             'running': False,
@@ -1073,10 +1067,9 @@ def index():
     
     if not session['logged_in']:
         return login_page()
-    elif not session['key_approved']:
-        return approval_request_page()
     else:
         return main_app()
+
 
 def login_page():
     if request.method == 'POST':
@@ -1087,19 +1080,9 @@ def login_page():
             if username and password:
                 user_id = db.verify_user(username, password)
                 if user_id:
-                    user_key = generate_user_key(username, password)
-                    
                     session['logged_in'] = True
                     session['user_id'] = user_id
                     session['username'] = username
-                    session['user_key'] = user_key
-                    
-                    if check_approval(user_key):
-                        session['key_approved'] = True
-                        session['approval_status'] = 'approved'
-                    else:
-                        session['key_approved'] = False
-                        session['approval_status'] = 'not_requested'
                     
                     return redirect(url_for('index'))
         
